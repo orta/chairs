@@ -22,9 +22,6 @@ Run `chairs` from the root folder of your project.
 
 You can [open a new issue](https://github.com/orta/muscialchairs/issues). I'm usually very responsive to changes.
 
-# Contributors
-- [orta therox](http://orta.github.com) (Current maintainer)
-
 ## Thanks to...
 - [Frank Macreery](https://github.com/macreery) for giving some good advice.
 
