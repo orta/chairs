@@ -1,4 +1,6 @@
+require "rubygems"
 require "pow"
+
 require "chairs/version"
 
 module Chairs
