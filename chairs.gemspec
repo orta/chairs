@@ -7,7 +7,7 @@ Gem::Specification.new do |s|
   s.version     = Chairs::VERSION
   s.authors     = ["orta"]
   s.email       = ["orta.therox@gmail.com"]
-  s.homepage    = ""
+  s.homepage    = "http://github.com/orta/muscialchairs"
   s.summary     = %q{A gem for swapping in/out document folders in iOS Sims}
   s.description = %q{Switch the documents directory for the iOS app you're currently working on using named tags. }
 
