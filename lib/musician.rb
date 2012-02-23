@@ -97,8 +97,9 @@ module Chairs
         reader = File.read(gitignore)
         
         unless reader.include?(gitignore_line)
-          puts "You don't have swap_docs/ in your .gitignore would you like chairs to add it?"
-          file << gitignore_line if gets.chomp![1].downcase == "y"
+          puts "You don't have swap_docs/ in your .gitignore would you like chairs to add it? [Yn]"
+          confirm = STDIN.gets.chomp
+          file << gitignore_line if confirm && confirm.downcase == "y"
         end
       end
     end
