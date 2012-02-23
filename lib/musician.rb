@@ -1,3 +1,4 @@
+require "pow"
 require "chairs/version"
 
 module Chairs

@@ -3,6 +3,6 @@
 lib = File.expand_path(File.dirname(__FILE__) + '/../lib')
 $LOAD_PATH.unshift(lib) if File.directory?(lib) && !$LOAD_PATH.include?(lib)
 
-require File.dirname(__FILE__) + '/../lib/chairs/musician'
+require File.dirname(__FILE__) + '/../lib/musician.rb'
 
 Chairs::Musician.new ARGV
