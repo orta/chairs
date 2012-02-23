@@ -30,11 +30,21 @@ module Chairs
         puts "Chairs needs a name for the target." 
         return
       end
-
+      
       setup
+      
+      if Pow("chairs/#{@target_folder}").exists?
+        print "This chair already exists, do you want to overwrite? [Yn] "
+        confirm = STDIN.gets.chomp
+        if confirm.downcase == "y"
+          Pow("chairs/#{@target_folder}").delete!
+        else
+          return
+        end
+      end
 
-      puts "Switching files from #{@app_folder}/Documents to"
-      puts "chairs/#{@target_folder} for #{@app_name}."
+      puts "Pulling files for #{@app_name}"
+      puts "From #{@app_folder}/Documents to chairs/#{@target_folder}"
       
       Pow("chairs/#{@target_folder}").create do
         Pow("#{@app_folder}/Documents").copy_to(Pow())
@@ -57,9 +67,8 @@ module Chairs
         return
       end
 
-
-      puts "Moving files from chairs/#{@target_folder} to"
-      puts "#{@app_folder}/Documents for #{@app_name}."
+      puts "Pushing files for #{@app_name}"
+      puts "From chairs/#{@target_folder} to #{@app_folder}/Documents"
 
       Pow("chairs/#{@target_folder}/Documents/").copy_to(Pow("#{@app_folder}/"))
 
@@ -113,7 +122,7 @@ module Chairs
         reader = File.read(gitignore)
         
         unless reader.include?(gitignore_line)
-          puts "You don't have chairs/ in your .gitignore would you like chairs to add it? [Yn]"
+          print "You don't have chairs/ in your .gitignore would you like chairs to add it? [Yn] "
           confirm = STDIN.gets.chomp
           file << gitignore_line if confirm && confirm.downcase == "y"
         end
