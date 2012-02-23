@@ -3,13 +3,13 @@ $:.push File.expand_path("../lib", __FILE__)
 require "chairs/version"
 
 Gem::Specification.new do |s|
-  s.name        = "chairs"
+  s.name        = "Musical Chairs"
   s.version     = Chairs::VERSION
   s.authors     = ["orta"]
   s.email       = ["orta.therox@gmail.com"]
   s.homepage    = ""
-  s.summary     = %q{TODO: Write a gem summary}
-  s.description = %q{TODO: Write a gem description}
+  s.summary     = %q{A gem for swapping in/out document folders in iOS Sims}
+  s.description = %q{Switch the documents directory for the iOS app you're currently working on using named tags. }
 
   s.rubyforge_project = "chairs"
 
