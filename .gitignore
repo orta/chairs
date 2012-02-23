@@ -3,3 +3,5 @@
 Gemfile.lock
 pkg/*
 swap_docs/
+
+chairs/

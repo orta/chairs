@@ -16,25 +16,25 @@ module Chairs
 
     def help
       puts ""
-      puts "Musical Chairs - for swapping in/out document folders in iOS Sims"
+      puts "Musical Chairs - for swapping in/out document folders in iOS Sims."
       puts ""
-      puts "           pull [name]        get the docs file from most recent app and call it name"
-      puts "           push [name]        move the named docs to the most recent app doc folder"
-      puts "           list               list all the current docs in working directory"
+      puts "           pull [name]        get the docs file from most recent app and call it name."
+      puts "           push [name]        move the named docs to the most recent app doc folder."
+      puts "           list               list all the current docs in working directory."
       puts ""
       puts "                                                                                      ./"
     end
 
     def pull
       unless @params[1]
-        puts "Swap Doc needs a name for the target" 
+        puts "Chairs needs a name for the target." 
         return
       end
 
       setup
 
       puts "Switching files from #{@app_folder}/Documents to"
-      puts "chairs/#{@target_folder} for #{@app_name}"
+      puts "chairs/#{@target_folder} for #{@app_name}."
       
       Pow("chairs/#{@target_folder}").create do
         Pow("#{@app_folder}/Documents").copy_to(Pow())
@@ -45,21 +45,21 @@ module Chairs
 
     def push
       unless @params[1]
-        puts "Swap Doc needs a name for the target"
+        puts "Chairs needs a name for the target."
         return
       end
 
       setup
 
       unless Pow("chairs/#{@target_folder}").exists? 
-        puts "You don't have a folder for #{@target_folder}"
+        puts "You don't have a folder for #{@target_folder}."
         list
         return
       end
 
 
       puts "Moving files from chairs/#{@target_folder} to"
-      puts "#{@app_folder}/Documents for #{@app_name}"
+      puts "#{@app_folder}/Documents for #{@app_name}."
 
       Pow("chairs/#{@target_folder}/Documents/").copy_to(Pow("#{@app_folder}/"))
 
@@ -68,10 +68,11 @@ module Chairs
 
     def list 
       unless Pow("chairs/").exists?
-        puts "You haven't used chairs yet" 
+        puts "You haven't used chairs yet." 
         return
       end
 
+      # get all folders in the directory
       folders = []
       @target_folder = @params[1]
       Pow("chairs/").each do |doc|
@@ -79,7 +80,15 @@ module Chairs
         folders << filename if doc.directory?
       end
 
-      puts "Currently you have #{ folders }."
+      # turn it into a sentence
+      if folders.length == 1
+        folders = "just " + folders[0]
+      else
+        last = folders.last
+        folders = "have " + folders[0..-2].join(", ") + " and " + last
+      end
+
+      puts "Currently you #{ folders }."
     end
 
     protected
@@ -95,6 +104,9 @@ module Chairs
 
     def check_for_gitignore
       gitignore = Pow(".gitignore")
+
+      # if the folder already exists, don't ask twice
+      # but surely everyone'll add it to the gitignore on first pull
       if gitignore.exists? && ( Pow("chairs/").exists? == false )
         gitignore_line = "\nchairs/\n"
         file = File.open(gitignore, "a")
@@ -111,6 +123,8 @@ module Chairs
     # get the most recently used simulator
     def get_app_folder
       app_folder = nil
+
+      # look through all the installed sims
       sims = Pow( Pow("~/Library/Application Support/iPhone Simulator") )
       sims.each do |simulator_folder| 
         next if simulator_folder.class != Pow::Directory
@@ -118,11 +132,14 @@ module Chairs
         apps = Pow( "#{simulator_folder}/Applications/" )
         next unless apps.exists?
 
+        # look through all the hash folders for apps
         apps.each do |maybe_app_folder|
           next unless maybe_app_folder.directory?
 
+          # first run
           app_folder = maybe_app_folder if !app_folder
             
+          # check that we've found the most recently changed
           if app_folder.modified_at < maybe_app_folder.modified_at
             app_folder = maybe_app_folder
           end
@@ -132,9 +149,13 @@ module Chairs
     end
 
     def get_app_name
+      # grab the app name
+      # look in the app's folder for a .app
       app_folder = get_app_folder
       Pow(app_folder).each do |app_folder_files|
         if app_folder_files.directory?
+
+          # and use the name of that
           filename = File.basename app_folder_files
           if filename.include? ".app"
             return filename
