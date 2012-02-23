@@ -33,10 +33,10 @@ module Chairs
 
       setup
 
-      puts "Moving files from #{@app_folder}/Documents to"
-      puts "swap_docs/#{@target_folder} for #{@app_name}"
+      puts "Switching files from #{@app_folder}/Documents to"
+      puts "chairs/#{@target_folder} for #{@app_name}"
       
-      Pow("swap_docs/#{@target_folder}").create do
+      Pow("chairs/#{@target_folder}").create do
         Pow("#{@app_folder}/Documents").copy_to(Pow())
       end
 
@@ -51,32 +51,35 @@ module Chairs
 
       setup
 
-      unless Pow("swap_docs/#{@target_folder}").exists? 
-        puts "Swap Doc cannot copy what doesn't exist"
+      unless Pow("chairs/#{@target_folder}").exists? 
+        puts "You don't have a folder for #{@target_folder}"
+        list
         return
       end
 
 
-      puts "Moving files from swap_docs/#{@target_folder} to"
+      puts "Moving files from chairs/#{@target_folder} to"
       puts "#{@app_folder}/Documents for #{@app_name}"
 
-      Pow("swap_docs/#{@target_folder}/Documents/").copy_to(Pow("#{@app_folder}/"))
+      Pow("chairs/#{@target_folder}/Documents/").copy_to(Pow("#{@app_folder}/"))
 
       puts "Done!"
     end
 
     def list 
-      unless Pow("swap_docs/").exists?
-        puts "Swap Docs hasn't been used yet" 
+      unless Pow("chairs/").exists?
+        puts "You haven't used chairs yet" 
         return
       end
 
-      puts "Swap Doc currently has"
+      folders = []
       @target_folder = @params[1]
-      Pow("swap_docs/").each do |doc|
+      Pow("chairs/").each do |doc|
         filename = File.basename(doc)
-        puts filename if doc.directory?
+        folders << filename if doc.directory?
       end
+
+      puts "Currently you have #{ folders }."
     end
 
     protected
@@ -92,13 +95,13 @@ module Chairs
 
     def check_for_gitignore
       gitignore = Pow(".gitignore")
-      if gitignore.exists? && ( Pow("swap_docs/").exists? == false )
-        gitignore_line = "\nswap_docs/\n"
+      if gitignore.exists? && ( Pow("chairs/").exists? == false )
+        gitignore_line = "\nchairs/\n"
         file = File.open(gitignore, "a")
         reader = File.read(gitignore)
         
         unless reader.include?(gitignore_line)
-          puts "You don't have swap_docs/ in your .gitignore would you like chairs to add it? [Yn]"
+          puts "You don't have chairs/ in your .gitignore would you like chairs to add it? [Yn]"
           confirm = STDIN.gets.chomp
           file << gitignore_line if confirm && confirm.downcase == "y"
         end
