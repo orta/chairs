@@ -70,6 +70,7 @@ module Chairs
       puts "Pushing files for #{@app_name}"
       puts "From chairs/#{@target_folder} to #{@app_folder}/Documents"
 
+      Pow("chairs/#{@target_folder}/Documents/").delete!
       Pow("chairs/#{@target_folder}/Documents/").copy_to(Pow("#{@app_folder}/"))
 
       puts "Done!"
