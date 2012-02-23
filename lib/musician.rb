@@ -52,7 +52,8 @@ module Chairs
       setup
 
       unless Pow("swap_docs/#{@target_folder}").exists? 
-        puts "Swap Doc cannot copy what doens't exist"
+        puts "Swap Doc cannot copy what doesn't exist"
+        return
       end
 
 
