@@ -26,7 +26,7 @@ You can [open a new issue](https://github.com/orta/muscialchairs/issues). I'm us
 - [Frank Macreery](https://github.com/macreery) for giving some good advice.
 
 ## License
-See the LICENSE.txtsfile included in the distribution.
+See the LICENSE.txt file included in the distribution.
 
 ## Copyright
 Copyright (c) 2012 Art.sy
