@@ -20,9 +20,14 @@ module Chairs
       puts ""
       puts "           pull [name]        get the docs file from most recent app and call it name."
       puts "           push [name]        move the named docs to the most recent app doc folder."
+      puts "           open               open the app folder in Finder."
       puts "           list               list all the current docs in working directory."
       puts ""
       puts "                                                                                      ./"
+    end
+
+    def open
+      `open "#{ get_app_folder }"`
     end
 
     def pull
@@ -36,7 +41,7 @@ module Chairs
       if Pow("chairs/#{@target_folder}").exists?
         print "This chair already exists, do you want to overwrite? [Yn] "
         confirm = STDIN.gets.chomp
-        if confirm.downcase == "y"
+        if confirm.downcase == "y" || confirm == ""
           Pow("chairs/#{@target_folder}").delete!
         else
           return
@@ -47,7 +52,7 @@ module Chairs
       puts "From #{@app_folder}/Documents to chairs/#{@target_folder}"
       
       Pow("chairs/#{@target_folder}").create do
-        Pow("#{@app_folder}/Documents").copy_to(Pow())
+        copy(Pow("#{@app_folder}/Documents"), Pow())
       end
 
       puts "Done!"
@@ -70,9 +75,9 @@ module Chairs
       puts "Pushing files for #{@app_name}"
       puts "From chairs/#{@target_folder} to #{@app_folder}/Documents"
 
-      Pow("chairs/#{@target_folder}/Documents/").delete!
-      Pow("chairs/#{@target_folder}/Documents/").copy_to(Pow("#{@app_folder}/"))
-
+      Pow("#{@app_folder}/Documents/").delete! if Pow("#{@app_folder}/Documents/").exists?
+      
+      copy(Pow("chairs/#{@target_folder}/Documents/"), Pow("#{@app_folder}/"))
       puts "Done!"
     end
 
@@ -125,7 +130,7 @@ module Chairs
         unless reader.include?(gitignore_line)
           print "You don't have chairs/ in your .gitignore would you like chairs to add it? [Yn] "
           confirm = STDIN.gets.chomp
-          file << gitignore_line if confirm && confirm.downcase == "y"
+          file << gitignore_line if confirm && ( confirm.downcase == "y" || confirm == "" )
         end
       end
     end
@@ -174,6 +179,13 @@ module Chairs
       end
       return ""
     end 
+
+    def copy(source, dest)
+      copy = "rsync -hqr '#{source}' '#{dest}'" 
+      puts copy
+      system copy
+    end
+
 
     def commands
       (public_methods - Object.public_methods).sort.map{ |c| c.to_sym}
