@@ -12,12 +12,11 @@ The first time you run it, chairs will ask you to add "chairs/" to your .gitigno
 
 Run `chairs` from the root folder of your project.
 
-	pull [name]        get documents and support files from latest built app and store as name.
-	push [name]        overwrite documents and support files from the latest build in Xcode.
-	rm   [name]        delete the files for the chair.
-	open               open the current app folder in Finder.
-	list               list all the current docs in working directory.
-
+		chairs pull [name]        get documents and support files from latest built app and store as name.
+		chairs push [name]        overwrite documents and support files from the latest build in Xcode.
+		chairs rm   [name]        delete the files for the chair.
+		chairs open               open the current app folder in Finder.
+		chairs list               list all the current docs in working directory.
 
 
 ## Problems?
