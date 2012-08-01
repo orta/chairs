@@ -144,8 +144,6 @@ module Chairs
 
     # get the most recently used simulator
     def get_app_folder
-      puts "get app folder"
-
       app_folder = nil
       app = nil
 
