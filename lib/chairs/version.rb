@@ -1,3 +1,3 @@
 module Chairs
-  VERSION = "0.9"
+  VERSION = "0.92"
 end

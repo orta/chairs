@@ -1,6 +1,6 @@
 # Musical Chairs
 
-A gem for swapping in/out document folders in iOS Sims
+A gem for swapping between app version in the iOS Simulator
 
 ## Setup
 
@@ -12,10 +12,12 @@ The first time you run it, chairs will ask you to add "chairs/" to your .gitigno
 
 Run `chairs` from the root folder of your project.
 
-        chairs pull [name]        get the docs file from most recent app and call it name.
-        chairs push [name]        move the named docs to the most recent app doc folder.
-        chairs list               list all the current docs in working directory.
-        chairs help               show in app help.
+	pull [name]        get documents and support files from latest built app and store as name.
+	push [name]        overwrite documents and support files from the latest build in Xcode.
+	rm   [name]        delete the files for the chair.
+	open               open the current app folder in Finder.
+	list               list all the current docs in working directory.
+
 
 
 ## Problems?

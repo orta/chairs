@@ -19,12 +19,12 @@ module Chairs
 
     def help
       puts ""
-      puts "Musical Chairs - for swapping in/out document folders in iOS Sims."
+      puts "Musical Chairs - for swapping in/out app version in the iOS Simulator."
       puts ""
-      puts "           pull [name]        get the docs file from most recent app and call it name."
-      puts "           push [name]        move the named docs to the most recent app doc folder."
-      #puts "           rm   [name]        delete the chairs data."
-      puts "           open               open the app folder in Finder."
+      puts "           pull [name]        get documents and support files from latest built app and store as name."
+      puts "           push [name]        overwrite documents and support files from the latest build in Xcode."
+      puts "           rm   [name]        delete the files for the chair."
+      puts "           open               open the current app folder in Finder."
       puts "           list               list all the current docs in working directory."
       puts ""
       puts "                                                                                      ./"
@@ -57,7 +57,7 @@ module Chairs
       puts "From #{@app_folder} to chairs/#{@target_folder}"
       
       Pow("chairs/#{@target_folder}/").create_directory do
-        copy(Pow("#{@app_folder}"), Pow())
+        copy(Pow("#{@app_folder}/*"), Pow())
       end
 
       puts "Done!"
@@ -82,7 +82,7 @@ module Chairs
 
        # Pow("#{@app_folder}/Documents/").delete! if Pow("#{@app_folder}/Documents/").exists?
       
-      copy(Pow("chairs/#{@target_folder}/"), Pow("#{@app_folder}/"))
+      copy(Pow("chairs/#{@target_folder}/*"), Pow("#{@app_folder}/"))
       puts "Done!"
     end
 
@@ -111,6 +111,22 @@ module Chairs
       end
 
       puts "Currently you #{ folders }."
+    end
+
+    def rm
+      unless @params[1]
+        puts "Chairs needs a name for the target."
+        return
+      end
+
+      @target_folder = @params[1]
+      if Pow("chairs/#{@target_folder}/").exists?
+        FileUtils.rm_r( Pow().to_s + "/chairs/#{@target_folder}/")
+        puts "Deleted #{@target_folder}/"
+      else 
+        puts "That chair does not exist."
+        list
+      end
     end
 
     protected
