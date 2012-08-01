@@ -137,10 +137,14 @@ module Chairs
 
     # get the most recently used simulator
     def get_app_folder
+      puts "get app folder"
+
       app_folder = nil
+      app = nil
 
       # look through all the installed sims
       sims = Pow( Pow("~/Library/Application Support/iPhone Simulator") )
+
       sims.each do |simulator_folder| 
         next if simulator_folder.class != Pow::Directory
 
@@ -153,12 +157,26 @@ module Chairs
 
           # first run
           app_folder = maybe_app_folder if !app_folder
-            
-          # check that we've found the most recently changed
-          if app_folder.modified_at < maybe_app_folder.modified_at
-            app_folder = maybe_app_folder
+          
+          # find the app in the folder and compare their modified dates
+          # remember .apps are folders
+          maybe_app = maybe_app_folder.directories.reject {|p| p.extension != "app"}
+          # it returns as an array
+          maybe_app = maybe_app[0]
+
+          if maybe_app && app
+            if maybe_app.modified_at > app.modified_at
+              app_folder = maybe_app_folder
+              app = maybe_app
+              puts "#{app} is in the lead"
+            end        
+          else
+              # make the first one the thing to beat
+              app_folder = maybe_app_folder
+              app = maybe_app
           end
         end
+
       end
       app_folder
     end
