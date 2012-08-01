@@ -3,6 +3,9 @@ require "pow"
 
 require "chairs/version"
 
+# this command comes in handy for dev
+# rm *.gem; gem uninstall chairs -ax;gem build *.gemspec; gem install *.gem;
+
 module Chairs
 
   class Musician
@@ -20,6 +23,7 @@ module Chairs
       puts ""
       puts "           pull [name]        get the docs file from most recent app and call it name."
       puts "           push [name]        move the named docs to the most recent app doc folder."
+      #puts "           rm   [name]        delete the chairs data."
       puts "           open               open the app folder in Finder."
       puts "           list               list all the current docs in working directory."
       puts ""
@@ -38,21 +42,22 @@ module Chairs
       
       setup
       
+      # validate
       if Pow("chairs/#{@target_folder}").exists?
         print "This chair already exists, do you want to overwrite? [Yn] "
         confirm = STDIN.gets.chomp
         if confirm.downcase == "y" || confirm == ""
-          Pow("chairs/#{@target_folder}").delete!
+          FileUtils.rm_r( Pow().to_s + "/chairs/#{@target_folder}/")
         else
           return
         end
       end
 
-      puts "Pulling files for #{@app_name}"
-      puts "From #{@app_folder}/Documents to chairs/#{@target_folder}"
+      puts "Pulling files for #{ @app_name }"
+      puts "From #{@app_folder} to chairs/#{@target_folder}"
       
-      Pow("chairs/#{@target_folder}").create do
-        copy(Pow("#{@app_folder}/Documents"), Pow())
+      Pow("chairs/#{@target_folder}/").create_directory do
+        copy(Pow("#{@app_folder}"), Pow())
       end
 
       puts "Done!"
@@ -73,11 +78,11 @@ module Chairs
       end
 
       puts "Pushing files for #{@app_name}"
-      puts "From chairs/#{@target_folder} to #{@app_folder}/Documents"
+      puts "From chairs/#{@target_folder} to #{@app_folder}"
 
-      Pow("#{@app_folder}/Documents/").delete! if Pow("#{@app_folder}/Documents/").exists?
+       # Pow("#{@app_folder}/Documents/").delete! if Pow("#{@app_folder}/Documents/").exists?
       
-      copy(Pow("chairs/#{@target_folder}/Documents/"), Pow("#{@app_folder}/"))
+      copy(Pow("chairs/#{@target_folder}/"), Pow("#{@app_folder}/"))
       puts "Done!"
     end
 
@@ -96,7 +101,9 @@ module Chairs
       end
 
       # turn it into a sentence
-      if folders.length == 1
+      if folders.length == 0
+        folders = "have no chairs setup."
+      elsif folders.length == 1
         folders = "just " + folders[0]
       else
         last = folders.last
@@ -168,7 +175,6 @@ module Chairs
             if maybe_app.modified_at > app.modified_at
               app_folder = maybe_app_folder
               app = maybe_app
-              puts "#{app} is in the lead"
             end        
           else
               # make the first one the thing to beat
@@ -199,7 +205,10 @@ module Chairs
     end 
 
     def copy(source, dest)
-      copy = "rsync -hqr '#{source}' '#{dest}'" 
+      source = source.to_s.gsub(" ", "\\ ")
+      dest = dest.to_s.gsub(" ", "\\ ")
+      copy = "cp -R #{source} #{dest}"
+
       puts copy
       system copy
     end
