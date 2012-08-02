@@ -80,8 +80,10 @@ module Chairs
       puts "Pushing files for #{@app_name}"
       puts "From chairs/#{@target_folder} to #{@app_folder}"
 
-       # Pow("#{@app_folder}/Documents/").delete! if Pow("#{@app_folder}/Documents/").exists?
-      
+      # clean the directory we're about to throw things in
+      target_path = Pow(@app_folder).to_s.gsub(" ", "\\ ")
+      system "rm -r #{target_path}/*"
+
       copy(Pow("chairs/#{@target_folder}/*"), Pow("#{@app_folder}/"))
       puts "Done!"
     end
