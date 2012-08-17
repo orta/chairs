@@ -26,6 +26,7 @@ module Chairs
       puts "           rm   [name]        delete the files for the chair."
       puts "           open               open the current app folder in Finder."
       puts "           list               list all the current docs in working directory."
+      puts "           clean              delete the apps current directory, a quick app uninstall."
       puts ""
       puts "                                                                                      ./"
     end
@@ -130,6 +131,19 @@ module Chairs
         list
       end
     end
+    
+    def clean 
+      setup
+      
+      puts "Deleting App directory"
+      target_path = Pow(@app_folder).to_s.gsub(" ", "\\ ")
+      
+      command =  "rm -r #{target_path}"
+      puts command
+      system command
+      
+      puts "Cleaned"
+    end
 
     protected
 
@@ -139,7 +153,6 @@ module Chairs
       @target_folder = @params[1]
       @app_folder = get_app_folder()
       @app_name = get_app_name()
-
     end
 
     def check_for_gitignore
@@ -217,6 +230,7 @@ module Chairs
           end
         end
       end
+      
       return ""
     end 
 
@@ -228,7 +242,6 @@ module Chairs
       puts copy
       system copy
     end
-
 
     def commands
       (public_methods - Object.public_methods).sort.map{ |c| c.to_sym}
