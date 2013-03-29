@@ -1,12 +1,12 @@
 # Musical Chairs
 
-A gem for swapping between app version in the iOS Simulator
+A gem for swapping iOS simulator states. Saves all the documents, library and cache for the most recently user iOS app into the current folder with a named version. Commands are modelled after git.
 
 ## Setup
 
     gem install chairs
 
-The first time you run it, chairs will ask you to add "chairs/" to your .gitignore file if you have one, you should accept this, it gets big fast.
+The first time you run it, `chairs` will ask you to add `"chairs/"` to your .gitignore file if you have one, you should accept this, it gets big fast.
 
 ## Usage
 
@@ -21,13 +21,13 @@ Run `chairs` from the root folder of your project.
 
 ## Problems?
 
-You can [open a new issue](https://github.com/orta/muscialchairs/issues). I'm usually very responsive to changes.
+You can [open a new issue](/orta/chairs/issues). I'm usually very responsive to changes.
 
 ## Thanks to...
 - [Frank Macreery](https://github.com/macreery) for giving some good advice.
 
 ## License
-See the LICENSE.txt file included in the distribution.
+See the [LICENSE.txt](/orta/chairs/blob/master/LICENSE.txt) file included in the distribution.
 
 ## Copyright
-Copyright (c) 2012 Art.sy
+Copyright (c) 2013 Art.sy
