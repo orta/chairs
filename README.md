@@ -1,6 +1,6 @@
 # Musical Chairs
 
-A gem for swapping iOS simulator states. Saves all the documents, library and cache for the most recently user iOS app into the current folder with a named version. Commands are modelled after git.
+A gem for swapping iOS simulator states. Saves all the documents, library and cache for the most recently user iOS app into the current folder with a named version. Commands are modelled after git. There's a writeup on the motivations on the [artsy.github.com](http://artsy.github.com/blog/2013/03/29/musical-chairs/) blog
 
 ## Setup
 
