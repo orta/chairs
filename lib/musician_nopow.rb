@@ -1,6 +1,4 @@
 require "rubygems"
-require_relative "pow"
-
 require "chairs/version"
 
 # this command comes in handy for dev
@@ -19,13 +17,14 @@ module Chairs
 
     def help
       puts ""
-      puts "Musical Chairs - for swapping in/out app data in the iOS Simulator."
+      puts "Musical Chairs - for swapping in/out app version in the iOS Simulator."
       puts ""
       puts "           pull [name]        get documents and support files from latest built app and store as name."
       puts "           push [name]        overwrite documents and support files from the latest build in Xcode."
       puts "           rm   [name]        delete the files for the chair."
       puts "           open               open the current app folder in Finder."
       puts "           list               list all the current docs in working directory."
+      puts "           clean              delete the apps current directory, a quick app uninstall."
       puts ""
       puts "                                                                                      ./"
     end
@@ -43,11 +42,11 @@ module Chairs
       setup
       
       # validate
-      if Pow("chairs/#{@target_folder}").exists?
+      if File.exists? "chairs/#{@target_folder}"
         print "This chair already exists, do you want to overwrite? [Yn] "
         confirm = STDIN.gets.chomp
         if confirm.downcase == "y" || confirm == ""
-          FileUtils.rm_r( Pow().to_s + "/chairs/#{@target_folder}/")
+          FileUtils.rm_r("./chairs/#{@target_folder}/")
         else
           return
         end
@@ -56,8 +55,12 @@ module Chairs
       puts "Pulling files for #{ @app_name }"
       puts "From #{@app_folder} to chairs/#{@target_folder}"
       
-      Pow("chairs/#{@target_folder}/").create_directory do
-        copy(Pow("#{@app_folder}/*"), Pow())
+      target = "chairs/#{@target_folder}/"
+      source = @app_folder
+      
+      `mkdir "#{target}"`
+      copy(source + "/*", target)
+      
       end
 
       puts "Done!"
@@ -71,7 +74,7 @@ module Chairs
 
       setup
 
-      unless Pow("chairs/#{@target_folder}").exists? 
+      unless File.exists? "chairs/#{@target_folder}"
         puts "You don't have a folder for #{@target_folder}."
         list
         return
@@ -81,10 +84,10 @@ module Chairs
       puts "From chairs/#{@target_folder} to #{@app_folder}"
 
       # clean the directory we're about to throw things in
-      target_path = Pow(@app_folder).to_s.gsub(" ", "\\ ")
+      target_path = @app_folder.to_s.gsub(" ", "\\ ")
       system "rm -r #{target_path}/*"
 
-      copy(Pow("chairs/#{@target_folder}/*"), Pow("#{@app_folder}/"))
+      copy("chairs/#{@target_folder}/*", @app_folder + "/")
       puts "Done!"
     end
 
@@ -178,38 +181,43 @@ module Chairs
       app = nil
 
       # look through all the installed sims
-      sims = Pow( Pow("~/Library/Application Support/iPhone Simulator") )
+      sim_home = "#{ENV['HOME']}/Library/Application Support/iPhone Simulator"
+      Dir.foreach sim_home do |simulator_folder|
+              
+        simulator_folder = sim_home + simulator_folder
+        puts "sim - #{simulator_folder}"
+        
+        next unless Dir.exists? simulator_folder
 
-      sims.each do |simulator_folder| 
-        next if simulator_folder.class != Pow::Directory
-
-        apps = Pow( "#{simulator_folder}/Applications/" )
-        next unless apps.exists?
-
-        # look through all the hash folders for apps
-        apps.each do |maybe_app_folder|
-          next unless maybe_app_folder.directory?
-
-          # first run
-          app_folder = maybe_app_folder if !app_folder
+        Dir.foreach simulator_folder do |apps|
+          # look through all the hash folders for apps
           
-          # find the app in the folder and compare their modified dates
-          # remember .apps are folders
-          maybe_app = maybe_app_folder.directories.reject {|p| p.extension != "app"}
-          # it returns as an array
-          maybe_app = maybe_app[0]
+          apps = simulator_folder + apps
+          puts "app - #{apps}"
+          
+          apps.each do |maybe_app_folder|
+            next unless maybe_app_folder.directory?
 
-          if maybe_app && app
-            if maybe_app.modified_at > app.modified_at
-              app_folder = maybe_app_folder
-              app = maybe_app
-            end        
-          else
-              # make the first one the thing to beat
-              app_folder = maybe_app_folder
-              app = maybe_app
+            # first run
+            app_folder = maybe_app_folder if !app_folder
+          
+            # find the app in the folder and compare their modified dates
+            # remember .apps are folders
+            maybe_app = maybe_app_folder.directories.reject {|p| p.extension != "app"}
+            # it returns as an array
+            maybe_app = maybe_app[0]
+
+            if maybe_app && app
+              if maybe_app.modified_at > app.modified_at
+                app_folder = maybe_app_folder
+                app = maybe_app
+              end        
+            else
+                # make the first one the thing to beat
+                app_folder = maybe_app_folder
+                app = maybe_app
+            end
           end
-        end
 
       end
       app_folder
