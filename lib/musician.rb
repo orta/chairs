@@ -98,8 +98,11 @@ module Chairs
       folders = []
       @target_folder = @params[1]
       Pow("chairs/").each do |doc|
-        filename = File.basename(doc)
-        folders << filename if doc.directory?
+        if doc.directory?
+          filename = File.basename(doc)
+          size = `du -sh '#{doc}' | cut -f1`.strip
+          folders << "#{filename} (#{size})"
+        end
       end
 
       # turn it into a sentence
