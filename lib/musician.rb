@@ -1,5 +1,5 @@
 require "rubygems"
-require_relative "pow"
+require File.join(File.dirname(__FILE__), 'pow')
 
 require "chairs/version"
 
