@@ -10,7 +10,7 @@ Gem::Specification.new do |s|
   s.homepage    = "http://github.com/orta/muscialchairs"
   s.summary     = %q{A gem for swapping in/out document folders in iOS Sims}
   s.description = %q{Switch the documents directory for the iOS app you're currently working on using named tags. }
-
+  s.licenses    = ['MIT']
   s.rubyforge_project = "chairs"
 
   s.files         = `git ls-files`.split("\n")
