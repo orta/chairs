@@ -30,4 +30,4 @@ You can [open a new issue](/orta/chairs/issues). I'm usually very responsive to 
 See the [LICENSE.txt](/orta/chairs/blob/master/LICENSE.txt) file included in the distribution.
 
 ## Copyright
-Copyright (c) 2013 Art.sy
+Copyright (c) 2014 Orta Therox & Art.sy
