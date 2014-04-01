@@ -36,12 +36,12 @@ module Chairs
 
     def pull
       unless @params[1]
-        puts "Chairs needs a name for the target." 
+        puts "Chairs needs a name for the target."
         return
       end
-      
+
       setup
-      
+
       # validate
       if Pow("chairs/#{@target_folder}").exists?
         print "This chair already exists, do you want to overwrite? [Yn] "
@@ -55,7 +55,7 @@ module Chairs
 
       puts "Pulling files for #{ @app_name }"
       puts "From #{@app_folder} to chairs/#{@target_folder}"
-      
+
       Pow("chairs/#{@target_folder}/").create_directory do
         copy(Pow("#{@app_folder}/*"), Pow())
       end
@@ -71,7 +71,7 @@ module Chairs
 
       setup
 
-      unless Pow("chairs/#{@target_folder}").exists? 
+      unless Pow("chairs/#{@target_folder}").exists?
         puts "You don't have a folder for #{@target_folder}."
         list
         return
@@ -88,9 +88,9 @@ module Chairs
       puts "Done!"
     end
 
-    def list 
+    def list
       unless Pow("chairs/").exists?
-        puts "You haven't used chairs yet." 
+        puts "You haven't used chairs yet."
         return
       end
 
@@ -128,22 +128,22 @@ module Chairs
       if Pow("chairs/#{@target_folder}/").exists?
         FileUtils.rm_r( Pow().to_s + "/chairs/#{@target_folder}/")
         puts "Deleted #{@target_folder}/"
-      else 
+      else
         puts "That chair does not exist."
         list
       end
     end
-    
-    def clean 
+
+    def clean
       setup
-      
+
       puts "Deleting App directory"
       target_path = Pow(@app_folder).to_s.gsub(" ", "\\ ")
-      
+
       command =  "rm -r #{target_path}"
       puts command
       system command
-      
+
       puts "Cleaned"
     end
 
@@ -166,7 +166,7 @@ module Chairs
         gitignore_line = "\nchairs/\n"
         file = File.open(gitignore, "a")
         reader = File.read(gitignore)
-        
+
         unless reader.include?(gitignore_line)
           print "You don't have chairs/ in your .gitignore would you like chairs to add it? [Yn] "
           confirm = STDIN.gets.chomp
@@ -183,7 +183,7 @@ module Chairs
       # look through all the installed sims
       sims = Pow( Pow("~/Library/Application Support/iPhone Simulator") )
 
-      sims.each do |simulator_folder| 
+      sims.each do |simulator_folder|
         next if simulator_folder.class != Pow::Directory
 
         apps = Pow( "#{simulator_folder}/Applications/" )
@@ -193,24 +193,22 @@ module Chairs
         apps.each do |maybe_app_folder|
           next unless maybe_app_folder.directory?
 
-          # first run
-          app_folder = maybe_app_folder if !app_folder
-          
           # find the app in the folder and compare their modified dates
           # remember .apps are folders
-          maybe_app = maybe_app_folder.directories.reject {|p| p.extension != "app"}
-          # it returns as an array
-          maybe_app = maybe_app[0]
+          maybe_app = maybe_app_folder.directories.select{|p|
+            p.extension == "app" && p.exists?
+          }.first
+          next unless maybe_app
 
-          if maybe_app && app
+          if app
             if maybe_app.modified_at > app.modified_at
               app_folder = maybe_app_folder
               app = maybe_app
-            end        
+            end
           else
-              # make the first one the thing to beat
-              app_folder = maybe_app_folder
-              app = maybe_app
+            # make the first one the thing to beat
+            app_folder = maybe_app_folder
+            app = maybe_app
           end
         end
 
@@ -232,9 +230,9 @@ module Chairs
           end
         end
       end
-      
+
       return ""
-    end 
+    end
 
     def copy(source, dest)
       source = source.to_s.gsub(" ", "\\ ")
@@ -247,6 +245,6 @@ module Chairs
 
     def commands
       (public_methods - Object.public_methods).sort.map{ |c| c.to_sym}
-    end 
+    end
   end
 end
