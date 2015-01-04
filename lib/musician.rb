@@ -1,6 +1,6 @@
 require "rubygems"
 require File.join(File.dirname(__FILE__), 'pow')
-
+require File.join(File.dirname(__FILE__), 'simctl_parser')
 require "chairs/version"
 
 # this command comes in handy for dev
@@ -21,6 +21,7 @@ module Chairs
       puts ""
       puts "Musical Chairs - for swapping in/out app data in the iOS Simulator."
       puts ""
+      puts "           sync               takes the app from the *currently open* sim, and send it to all other sims."
       puts "           pull [name]        get documents and support files from latest built app and store as name."
       puts "           push [name]        overwrite documents and support files from the latest build in Xcode."
       puts "           rm   [name]        delete the files for the chair."
@@ -31,7 +32,9 @@ module Chairs
     end
 
     def open
-      `open "#{ get_app_folder }"`
+      setup
+      puts "Opening #{ @app_name }"
+      `open "#{ @app_folder }"`
     end
 
     def pull
@@ -146,6 +149,34 @@ module Chairs
 
       puts "Cleaned"
     end
+    
+    def sync
+      setup
+      
+      simctl = SimctlParser.new
+      current_device = simctl.open_device
+      get_devices = simctl.get_devices
+      
+      unless current_device 
+        puts "Couldn't find an active iOS Simulator"
+        return
+      end
+      
+      print "Migrating #{@app_name} from #{current_device[:name]} to all other devices"
+
+      os = ""
+      get_devices.each do |device|
+        next if device[:id] == current_device[:id]
+        if device[:os] != os
+          os = device[:os]
+          print "\n #{os} -> "
+        end
+        
+        new_folder = "~/Library/Developer/CoreSimulator/Devices/" + device[:id] + "/data/Applications"
+        copy(@app_folder, new_folder, false)
+        print "#{ device[:name] }, "
+      end
+    end
 
     protected
 
@@ -181,12 +212,12 @@ module Chairs
       app = nil
 
       # look through all the installed sims
-      sims = Pow( Pow("~/Library/Application Support/iPhone Simulator") )
+      sims = Pow( Pow("~/Library/Developer/CoreSimulator/Devices") )
 
       sims.each do |simulator_folder|
         next if simulator_folder.class != Pow::Directory
 
-        apps = Pow( "#{simulator_folder}/Applications/" )
+        apps = Pow( "#{simulator_folder}/data/Applications/" )
         next unless apps.exists?
 
         # look through all the hash folders for apps
@@ -195,7 +226,7 @@ module Chairs
 
           # find the app in the folder and compare their modified dates
           # remember .apps are folders
-          maybe_app = maybe_app_folder.directories.select{|p|
+          maybe_app = maybe_app_folder.directories.select{ |p|
             p.extension == "app" && p.exists?
           }.first
           next unless maybe_app
@@ -234,12 +265,13 @@ module Chairs
       return ""
     end
 
-    def copy(source, dest)
+    def copy(source, dest, verbose=true)
       source = source.to_s.gsub(" ", "\\ ")
       dest = dest.to_s.gsub(" ", "\\ ")
       copy = "cp -R #{source} #{dest}"
-
-      puts copy
+      if verbose
+        puts copy
+      end
       system copy
     end
 
