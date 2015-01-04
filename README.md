@@ -17,7 +17,7 @@ Run `chairs` from the root folder of your project.
 		chairs rm   [name]        delete the files for the chair.
 		chairs open               open the current app folder in Finder.
 		chairs list               list all the current docs in working directory.
-
+		chairs sync               takes the app from the *currently open* sim, and send it to all other sims.
 
 ## Problems?
 
