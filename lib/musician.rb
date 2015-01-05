@@ -1,6 +1,8 @@
 require "rubygems"
 require File.join(File.dirname(__FILE__), 'pow')
 require File.join(File.dirname(__FILE__), 'simctl_parser')
+require File.join(File.dirname(__FILE__), 'install_parser')
+
 require "chairs/version"
 
 # this command comes in handy for dev
@@ -34,7 +36,7 @@ module Chairs
     def open
       setup
       puts "Opening #{ @app_name }"
-      `open "#{ @app_folder }"`
+      `open "#{ @app.bundle_path }"`
     end
 
     def pull
@@ -57,10 +59,10 @@ module Chairs
       end
 
       puts "Pulling files for #{ @app_name }"
-      puts "From #{@app_folder} to chairs/#{@target_folder}"
+      puts "From #{@app} to chairs/#{@target_folder}"
 
       Pow("chairs/#{@target_folder}/").create_directory do
-        copy(Pow("#{@app_folder}/*"), Pow())
+        copy(Pow("#{@app}/*"), Pow())
       end
 
       puts "Done!"
@@ -81,13 +83,13 @@ module Chairs
       end
 
       puts "Pushing files for #{@app_name}"
-      puts "From chairs/#{@target_folder} to #{@app_folder}"
+      puts "From chairs/#{@target_folder} to #{@app}"
 
       # clean the directory we're about to throw things in
-      target_path = Pow(@app_folder).to_s.gsub(" ", "\\ ")
+      target_path = Pow(@app).to_s.gsub(" ", "\\ ")
       system "rm -r #{target_path}/*"
 
-      copy(Pow("chairs/#{@target_folder}/*"), Pow("#{@app_folder}/"))
+      copy(Pow("chairs/#{@target_folder}/*"), Pow("#{@app}/"))
       puts "Done!"
     end
 
@@ -141,8 +143,8 @@ module Chairs
       setup
 
       puts "Deleting App directory"
-      target_path = Pow(@app_folder).to_s.gsub(" ", "\\ ")
-
+      target_path = Pow(@app).to_s.gsub(" ", "\\ ")
+      
       command =  "rm -r #{target_path}"
       puts command
       system command
@@ -155,26 +157,51 @@ module Chairs
       
       simctl = SimctlParser.new
       current_device = simctl.open_device
-      get_devices = simctl.get_devices
+      devices = simctl.get_devices
       
       unless current_device 
         puts "Couldn't find an active iOS Simulator"
         return
       end
       
+      
       print "Migrating #{@app_name} from #{current_device[:name]} to all other devices"
 
       os = ""
-      get_devices.each do |device|
+      devices.each do |device|
         next if device[:id] == current_device[:id]
         if device[:os] != os
           os = device[:os]
           print "\n #{os} -> "
         end
         
-        new_folder = "~/Library/Developer/CoreSimulator/Devices/" + device[:id] + "/data/Applications"
-        copy(@app_folder, new_folder, false)
-        print "#{ device[:name] }, "
+        same_app_different_device = @all_apps.flatten.select do | app |
+            app.app_path.include?(device[:id]) && app.bundle_id == @app.bundle_id
+        end.first
+        
+        if same_app_different_device
+          new_app = same_app_different_device
+          puts 
+          puts [@app.app_path, new_app.app_path]
+          puts [@app.bundle_path, new_app.bundle_path]
+#          copy(@app.app_path, new_app.app_path, true)
+          
+        else
+          
+        end
+          
+          
+        puts "cp -RF -> "
+
+        app_folder = @app.app_path
+        
+        # `rm -rf #{new_app_path}`
+
+        if device == devices.last 
+          print "and #{ device[:name] }."
+        else
+          print "#{ device[:name] }, "
+        end
       end
     end
 
@@ -184,8 +211,9 @@ module Chairs
       check_for_gitignore
 
       @target_folder = @params[1]
-      @app_folder = get_app_folder()
-      @app_name = get_app_name()
+      @all_apps = get_all_apps
+      @app = get_most_recent_app
+      @app_name = @app.bundle_id
     end
 
     def check_for_gitignore
@@ -206,63 +234,22 @@ module Chairs
       end
     end
 
-    # get the most recently used simulator
-    def get_app_folder
-      app_folder = nil
-      app = nil
-
-      # look through all the installed sims
-      sims = Pow( Pow("~/Library/Developer/CoreSimulator/Devices") )
-
-      sims.each do |simulator_folder|
-        next if simulator_folder.class != Pow::Directory
-
-        apps = Pow( "#{simulator_folder}/data/Applications/" )
-        next unless apps.exists?
-
-        # look through all the hash folders for apps
-        apps.each do |maybe_app_folder|
-          next unless maybe_app_folder.directory?
-
-          # find the app in the folder and compare their modified dates
-          # remember .apps are folders
-          maybe_app = maybe_app_folder.directories.select{ |p|
-            p.extension == "app" && p.exists?
-          }.first
-          next unless maybe_app
-
-          if app
-            if maybe_app.modified_at > app.modified_at
-              app_folder = maybe_app_folder
-              app = maybe_app
-            end
-          else
-            # make the first one the thing to beat
-            app_folder = maybe_app_folder
-            app = maybe_app
+    def get_all_apps
+      sims = Dir.glob(Dir.home + "/Library/Logs/CoreSimulator/*")
+      all_apps = []
+      sims.map do |simulator_folder|
+        if File.directory? simulator_folder
+          log = "#{simulator_folder}/MobileInstallation/mobile_installation.log.0"
+          if File.exist?(log)
+            all_apps << InstallParser.new.parse(log)
           end
         end
-
-      end
-      app_folder
+      end.compact
     end
 
-    def get_app_name
-      # grab the app name
-      # look in the app's folder for a .app
-      app_folder = get_app_folder
-      Pow(app_folder).each do |app_folder_files|
-        if app_folder_files.directory?
-
-          # and use the name of that
-          filename = File.basename app_folder_files
-          if filename.include? ".app"
-            return filename
-          end
-        end
-      end
-
-      return ""
+    # get the most recently used simulator app
+    def get_most_recent_app
+      @all_apps.flatten.sort_by(&:modified_date).reverse.first
     end
 
     def copy(source, dest, verbose=true)
@@ -271,12 +258,14 @@ module Chairs
       copy = "cp -R #{source} #{dest}"
       if verbose
         puts copy
+        system copy
+      else
+        `#{copy}`
       end
-      system copy
     end
 
     def commands
-      (public_methods - Object.public_methods).sort.map{ |c| c.to_sym}
+      (public_methods - Object.public_methods).sort.map{ |c| c.to_sym }
     end
   end
 end
