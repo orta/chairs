@@ -158,50 +158,65 @@ module Chairs
       simctl = SimctlParser.new
       current_device = simctl.open_device
       devices = simctl.get_devices
-      
+
       unless current_device 
         puts "Couldn't find an active iOS Simulator"
         return
       end
       
-      
       print "Migrating #{@app_name} from #{current_device[:name]} to all other devices"
 
+      all_copies_of_app = @all_apps.flatten.uniq(&:app_path).select do | app |
+        app.bundle_id == @app.bundle_id
+      end
+
       os = ""
+      error_devices = []
       devices.each do |device|
         next if device[:id] == current_device[:id]
+        
         if device[:os] != os
           os = device[:os]
           print "\n #{os} -> "
         end
-        
-        same_app_different_device = @all_apps.flatten.select do | app |
-            app.app_path.include?(device[:id]) && app.bundle_id == @app.bundle_id
+                
+        same_app_different_device = all_copies_of_app.select do |app|
+          app.app_path.include? device[:id]
         end.first
         
         if same_app_different_device
           new_app = same_app_different_device
-          puts 
-          puts [@app.app_path, new_app.app_path]
-          puts [@app.bundle_path, new_app.bundle_path]
-#          copy(@app.app_path, new_app.app_path, true)
+  
+          # replace the app
+          copy(@app.app_path, new_app.app_path, false)
+          # replace the bundles
+          copy(@app.bundle_path, new_app.bundle_path, true)
+          
+          if device == devices.last 
+            print "and #{ device[:name] }."
+          else
+            print "#{ device[:name] }, "
+          end
           
         else
-          
-        end
-          
-          
-        puts "cp -RF -> "
+#          # app to new place with folder
+#          app_host_folder = @app.app_path.split("/")[0..-2].join("/")
+#          copy(app_host_folder, "/Users/orta/Library/Developer/CoreSimulator/Devices/#{device[:id]}/data/Containers/Bundle/Application/", verbose)
+#          
+#          # new bundle
+#          new_app_bundle_path = "/Users/orta/Library/Developer/CoreSimulator/Devices/#{device[:id]}/data/Containers/Data/Application/"
+#          copy(@app.bundle_path, new_app_bundle_path, verbose)
 
-        app_folder = @app.app_path
+           error_devices << device
+        end
+      end
+      
+      if error_devices.count
+        errored_data = error_devices.map do |device|
+          device == error_devices.last ? "and #{ device[:name] }." : "#{device[:name]}, "
+        end
         
-        # `rm -rf #{new_app_path}`
-
-        if device == devices.last 
-          print "and #{ device[:name] }."
-        else
-          print "#{ device[:name] }, "
-        end
+        print "To sync content across all devices, please run your app on: " + errored_data.join("")
       end
     end
 

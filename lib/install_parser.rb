@@ -1,5 +1,9 @@
 class App
   attr_accessor :bundle_id, :name, :app_path, :bundle_path, :modified_date, :exists
+  
+  def to_s
+    "<App #{bundle_id} - #{name} > - #{app_path}"
+  end
 end
 
 class InstallParser
@@ -20,11 +24,12 @@ class InstallParser
         if line.include? "Bundle/Application"
           app = apps[bundle_id]
           app_container = line.split(" at ").last.strip 
+          app_path = Dir.glob(app_container + "/*.app").first
 
-          app.exists = Dir.exists? app_container
+          app.exists = app_path != nil
           
           if app.exists
-            app.app_path = Dir.glob(app_container + "/*.app").first
+            app.app_path = app_path
             app.modified_date = File.mtime app.app_path
             
             if File.read("#{app.app_path}/Info.plist").include? "CFBundleDisplayName"
