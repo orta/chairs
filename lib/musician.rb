@@ -24,6 +24,7 @@ module Chairs
       puts "Musical Chairs - for swapping in/out app data in the iOS Simulator."
       puts ""
       puts "           sync               takes the app from the *currently open* sim, and send it to all other sims."
+      puts "           nuke               takes the app from the *currently open* sim, and removes all instances of it in each device. "
       puts "           pull [name]        get documents and support files from latest built app and store as name."
       puts "           push [name]        overwrite documents and support files from the latest build in Xcode."
       puts "           rm   [name]        delete the files for the chair."
@@ -150,6 +151,20 @@ module Chairs
       system command
 
       puts "Cleaned"
+    end
+    
+    def nuke
+      setup
+      
+      simctl = SimctlParser.new
+      devices = simctl.get_devices
+      
+      puts "All apps from all devices"
+      
+      devices.each do |device|
+        puts "Removing from #{device[:name]}"
+        `xcrun simctl erase #{device[:id]}`
+      end
     end
     
     def sync

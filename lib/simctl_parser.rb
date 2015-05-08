@@ -8,7 +8,7 @@ class SimctlParser
         os = line.gsub("-","").strip
       end
       
-      if line.strip.length != 0 && line.strip.start_with?( "--") == false
+      if line.strip.length != 0 && line.strip.start_with?( "--") == false && line.include?("unavailable") == false
       {
         :name => line.strip.split(" ")[0..-3].join(" "),
         :state => line.strip.split(" ")[-1],
